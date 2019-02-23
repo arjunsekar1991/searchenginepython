@@ -6,6 +6,8 @@
 '''
 
 
+def preProcess(term) :
+ list
 
 def isStopWord(word):
     ''' using the NLTK functions, return true/false'''

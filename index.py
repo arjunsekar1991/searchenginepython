@@ -12,7 +12,10 @@ Index structure:
 
 '''
 import util
-import doc
+import re
+#import doc
+from cran import CranFile
+from tokenize import tokenize, untokenize, NUMBER, STRING, NAME, OP
 
 
 class Posting:
@@ -67,7 +70,6 @@ class InvertedIndex:
         # (2) remove stopwords,
         # (3) stemming
 
-
     def sort(self):
         ''' sort all posting lists by docID'''
         #ToDo
@@ -92,14 +94,40 @@ class InvertedIndex:
 
 def test():
     ''' test your code thoroughly. put the testing cases here'''
-    print 'Pass'
+    print('Pass')
 
 def indexingCranfield():
     #ToDo: indexing the Cranfield dataset and save the index to a file
     # command line usage: "python index.py cran.all index_file"
     # the index is saved to index_file
+    cf = CranFile('cran.all')
 
-    print 'Done'
+    for doc in cf.docs:
+        if doc.docID == "1":
+            titletoken = re.split(" ",  doc.title.replace('\n', ' '))
+            titletoken = ' '.join(titletoken).split()
+            bodytoken = re.split(" ",  doc.body.replace('\n', ' '))
+            bodytoken = ' '.join(bodytoken).split()
+            tokens = titletoken+bodytoken
+            #print(tokens)
+
+
+            #print(indexItem.add(doc.docID,))
+           # print()
+    print(len(cf.docs))
+    k = 0
+    positionindoc = 1;
+    while k < len(tokens):
+        print(positionindoc)
+        print(tokens[k])
+        indexItem = IndexItem(tokens[0])
+        indexItem.add(doc.docID, positionindoc)
+        positionindoc = positionindoc + len(tokens[k])
+        positionindoc = positionindoc+1;
+       # print(len(tokens[k]))
+
+        k = k+1
+  #  print('Done')
 
 if __name__ == '__main__':
     #test()
