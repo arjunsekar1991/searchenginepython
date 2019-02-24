@@ -46,7 +46,7 @@ class IndexItem:
 
     def add(self, docid, pos):
         ''' add a posting'''
-        if not self.posting.has_key(docid):
+        if docid not in self.posting:
             self.posting[docid] = Posting(docid)
         self.posting[docid].append(pos)
 
@@ -101,7 +101,7 @@ def indexingCranfield():
     # command line usage: "python index.py cran.all index_file"
     # the index is saved to index_file
     cf = CranFile('cran.all')
-
+    indexitemlist = []
     for doc in cf.docs:
         if doc.docID == "1":
             titletoken = re.split(" ",  doc.title.replace('\n', ' '))
@@ -110,24 +110,32 @@ def indexingCranfield():
             bodytoken = ' '.join(bodytoken).split()
             tokens = titletoken+bodytoken
             #print(tokens)
+            k =0
+            positionindoc = 0
+            while k < len(tokens):
+                # print(positionindoc)
+                print(tokens[k])
+
+                indexItem = IndexItem(tokens[k])
+                docId = 1
+                indexItem.add(doc.docID, positionindoc)
+                print(indexItem.term)
+                print(indexItem.posting.values())
+                    # indexitemlist.append(indexItem)
+                positionindoc = positionindoc + len(tokens[k]) + 1
+                indexitemlist.append(indexItem)
+                # print(len(tokens[k]))
+
+                k = k + 1
 
 
             #print(indexItem.add(doc.docID,))
            # print()
-    print(len(cf.docs))
-    k = 0
-    positionindoc = 1;
-    while k < len(tokens):
-        print(positionindoc)
-        print(tokens[k])
-        indexItem = IndexItem(tokens[0])
-        indexItem.add(doc.docID, positionindoc)
-        positionindoc = positionindoc + len(tokens[k])
-        positionindoc = positionindoc+1;
-       # print(len(tokens[k]))
+  #  print(len(cf.docs))
 
-        k = k+1
-  #  print('Done')
+    print(indexitemlist[0])
+    print(indexitemlist[0].posting)
+    #print(indexitemlist)
 
 if __name__ == '__main__':
     #test()
