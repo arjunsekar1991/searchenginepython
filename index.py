@@ -69,7 +69,30 @@ class InvertedIndex:
         # (1) convert to lower cases,
         # (2) remove stopwords,
         # (3) stemming
-
+        processData = []
+        if doc.docID == '1':
+#            print(doc.docID)
+            titletoken = re.split(" ", doc.title.replace('\n', ' '))
+            titletoken = ' '.join(titletoken).split()
+            bodytoken = re.split(" ", doc.body.replace('\n', ' '))
+            bodytoken = ' '.join(bodytoken).split()
+            tokens = titletoken + bodytoken
+            tokens = [element.lower() for element in tokens];
+            #print (tokens)
+            #capturing useful information before preprocessing and stemming
+            k = 0
+            positionindoc = 1
+            while k < len(tokens):
+#                print(tokens[k])
+                tuple = (doc.docID, tokens[k],positionindoc)
+                positionindoc = positionindoc + len(tokens[k]) +1;
+                processData.append(tuple)
+                k = k+1
+#            print (processData[0])
+#            print (processData[1])
+#            print (processData[2])
+#            print (doc.title[:12])
+#            print(processData[1][1])
     def sort(self):
         ''' sort all posting lists by docID'''
         #ToDo
@@ -101,6 +124,10 @@ def indexingCranfield():
     # command line usage: "python index.py cran.all index_file"
     # the index is saved to index_file
     cf = CranFile('cran.all')
+    iindex = InvertedIndex()
+    for doc in cf.docs:
+        iindex.indexDoc(doc)
+    """  
     indexitemlist = []
     for doc in cf.docs:
         if doc.docID == "1":
@@ -135,7 +162,7 @@ def indexingCranfield():
 
     print(indexitemlist[0])
     print(indexitemlist[0].posting)
-    #print(indexitemlist)
+    #print(indexitemlist)"""
 
 if __name__ == '__main__':
     #test()
