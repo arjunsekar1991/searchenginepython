@@ -92,7 +92,7 @@ class InvertedIndex:
 #            print (processData[1])
 #            print (processData[2])
 #            print (doc.title[:12])
-#            print(processData[1][1])
+            print(processData[1][1])
     def sort(self):
         ''' sort all posting lists by docID'''
         #ToDo
