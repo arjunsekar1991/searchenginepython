@@ -1,5 +1,4 @@
 
-
 '''
 
 Index structure:
@@ -13,7 +12,7 @@ Index structure:
 '''
 import util
 import re
-#import doc
+# import doc
 from cran import CranFile
 from tokenize import tokenize, untokenize, NUMBER, STRING, NAME, OP
 
@@ -35,14 +34,14 @@ class Posting:
 
     def term_freq(self):
         ''' return the term frequency in the document'''
-        #ToDo
+        # ToDo
 
 
 class IndexItem:
     def __init__(self, term):
         self.term = term
-        self.posting = {} #postings are stored in a python dict for easier index building
-        self.sorted_postings= [] # may sort them by docID for easier query processing
+        self.posting = {}  # postings are stored in a python dict for easier index building
+        #self.sorted_posting s= [] # may sort them by docID for easier query processing
 
     def add(self, docid, pos):
         ''' add a posting'''
@@ -70,6 +69,7 @@ class InvertedIndex:
         # (2) remove stopwords,
         # (3) stemming
         processData = []
+        indexitemlist = []
         if doc.docID == '1':
 #            print(doc.docID)
             titletoken = re.split(" ", doc.title.replace('\n', ' '))
@@ -78,24 +78,38 @@ class InvertedIndex:
             bodytoken = ' '.join(bodytoken).split()
             tokens = titletoken + bodytoken
             tokens = [element.lower() for element in tokens];
-            #print (tokens)
-            #capturing useful information before preprocessing and stemming
+# print (tokens)
+# capturing useful information before preprocessing and stemming
             k = 0
             positionindoc = 1
             while k < len(tokens):
 #                print(tokens[k])
-                tuple = (doc.docID, tokens[k],positionindoc)
+                tuple = (doc.docID, tokens[k] ,positionindoc)
                 positionindoc = positionindoc + len(tokens[k]) +1;
                 processData.append(tuple)
-                k = k+1
-#            print (processData[0])
-#            print (processData[1])
-#            print (processData[2])
-#            print (doc.title[:12])
-            print(processData[1][1])
+                tempindexitem = IndexItem(tokens[k])
+                isaddable = None
+                if k == 0:
+                    indexitemlist.append(tempindexitem)
+                for x in indexitemlist:
+                    if x.term != tokens[k]:
+                        isaddable = True
+                    else:
+                        isaddable = False
+                        break
+                if isaddable:
+                    indexitemlist.append(tempindexitem)
+                k = k + 1
+
+            #            print (processData[0])
+            #            print (processData[1])
+            #            print (processData[2])
+            #            print (doc.title[:12])
+            print(indexitemlist)
+
     def sort(self):
         ''' sort all posting lists by docID'''
-        #ToDo
+        # ToDo
 
     def find(self, term):
         return self.items[term]
@@ -110,7 +124,7 @@ class InvertedIndex:
 
     def idf(self, term):
         ''' compute the inverted document frequency for a given term'''
-        #ToDo: return the IDF of the term
+        # ToDo: return the IDF of the term
 
     # more methods if needed
 
@@ -119,14 +133,16 @@ def test():
     ''' test your code thoroughly. put the testing cases here'''
     print('Pass')
 
+
 def indexingCranfield():
-    #ToDo: indexing the Cranfield dataset and save the index to a file
+    # ToDo: indexing the Cranfield dataset and save the index to a file
     # command line usage: "python index.py cran.all index_file"
     # the index is saved to index_file
     cf = CranFile('cran.all')
     iindex = InvertedIndex()
     for doc in cf.docs:
         iindex.indexDoc(doc)
+    print(iindex.items)
     """  
     indexitemlist = []
     for doc in cf.docs:
@@ -164,6 +180,7 @@ def indexingCranfield():
     print(indexitemlist[0].posting)
     #print(indexitemlist)"""
 
+
 if __name__ == '__main__':
-    #test()
+    # test()
     indexingCranfield()
