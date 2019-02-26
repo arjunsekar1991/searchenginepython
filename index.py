@@ -85,20 +85,28 @@ class InvertedIndex:
             while k < len(tokens):
 #                print(tokens[k])
                 tuple = (doc.docID, tokens[k] ,positionindoc)
-                positionindoc = positionindoc + len(tokens[k]) +1;
+
                 processData.append(tuple)
                 tempindexitem = IndexItem(tokens[k])
                 isaddable = None
                 if k == 0:
+                    tempindexitem.add(doc.docID, positionindoc)
                     indexitemlist.append(tempindexitem)
                 for x in indexitemlist:
                     if x.term != tokens[k]:
                         isaddable = True
                     else:
-                        isaddable = False
+                        if k!= 0:
+                            isaddable = False
+                            x.posting.get(doc.docID).append(positionindoc)
                         break
                 if isaddable:
+
+                    tempindexitem.add(doc.docID,positionindoc)
                     indexitemlist.append(tempindexitem)
+
+
+                positionindoc = positionindoc + len(tokens[k]) + 1;
                 k = k + 1
 
             #            print (processData[0])
