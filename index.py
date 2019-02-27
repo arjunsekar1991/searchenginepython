@@ -115,12 +115,8 @@ class InvertedIndex:
             #            print (processData[2])
             #            print (doc.title[:12])
 #        print(indexitemlist)
-        items = indexitemlist
-        jsonEncoded = jsonpickle.encode(items)
-        print(jsonEncoded)
-        fh = open('index_file', 'a')
-        fh.write(jsonEncoded)
-        fh.close
+        self.items = indexitemlist
+        self.save("index_file")
 
     def sort(self):
         ''' sort all posting lists by docID'''
@@ -132,7 +128,11 @@ class InvertedIndex:
     def save(self, filename):
         ''' save to disk'''
         # ToDo: using your preferred method to serialize/deserialize the index
-
+        jsonEncoded = jsonpickle.encode(self.items)
+  #      print(jsonEncoded)
+        fh = open(filename, 'a')
+        fh.write(jsonEncoded)
+        fh.close
 
     def load(self, filename):
         ''' load from disk'''
@@ -158,43 +158,7 @@ def indexingCranfield():
     iindex = InvertedIndex()
     for doc in cf.docs:
         iindex.indexDoc(doc)
-    print(iindex.items)
-    """  
-    indexitemlist = []
-    for doc in cf.docs:
-        if doc.docID == "1":
-            titletoken = re.split(" ",  doc.title.replace('\n', ' '))
-            titletoken = ' '.join(titletoken).split()
-            bodytoken = re.split(" ",  doc.body.replace('\n', ' '))
-            bodytoken = ' '.join(bodytoken).split()
-            tokens = titletoken+bodytoken
-            #print(tokens)
-            k =0
-            positionindoc = 0
-            while k < len(tokens):
-                # print(positionindoc)
-                print(tokens[k])
-
-                indexItem = IndexItem(tokens[k])
-                docId = 1
-                indexItem.add(doc.docID, positionindoc)
-                print(indexItem.term)
-                print(indexItem.posting.values())
-                    # indexitemlist.append(indexItem)
-                positionindoc = positionindoc + len(tokens[k]) + 1
-                indexitemlist.append(indexItem)
-                # print(len(tokens[k]))
-
-                k = k + 1
-
-
-            #print(indexItem.add(doc.docID,))
-           # print()
-  #  print(len(cf.docs))
-
-    print(indexitemlist[0])
-    print(indexitemlist[0].posting)
-    #print(indexitemlist)"""
+    #print(iindex.items)
 
 
 if __name__ == '__main__':
