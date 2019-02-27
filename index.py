@@ -16,7 +16,8 @@ import re
 from cran import CranFile
 from tokenize import tokenize, untokenize, NUMBER, STRING, NAME, OP
 
-
+import json, codecs
+import jsonpickle
 class Posting:
     def __init__(self, docID):
         self.docID = docID
@@ -70,19 +71,19 @@ class InvertedIndex:
         # (3) stemming
         processData = []
         indexitemlist = []
-        if doc.docID == '1':
+#        if doc.docID == '1':
 #            print(doc.docID)
-            titletoken = re.split(" ", doc.title.replace('\n', ' '))
-            titletoken = ' '.join(titletoken).split()
-            bodytoken = re.split(" ", doc.body.replace('\n', ' '))
-            bodytoken = ' '.join(bodytoken).split()
-            tokens = titletoken + bodytoken
-            tokens = [element.lower() for element in tokens];
+        titletoken = re.split(" ", doc.title.replace('\n', ' '))
+        titletoken = ' '.join(titletoken).split()
+        bodytoken = re.split(" ", doc.body.replace('\n', ' '))
+        bodytoken = ' '.join(bodytoken).split()
+        tokens = titletoken + bodytoken
+        tokens = [element.lower() for element in tokens];
 # print (tokens)
 # capturing useful information before preprocessing and stemming
-            k = 0
-            positionindoc = 1
-            while k < len(tokens):
+        k = 0
+        positionindoc = 1
+        while k < len(tokens):
 #                print(tokens[k])
                 tuple = (doc.docID, tokens[k] ,positionindoc)
 
@@ -113,7 +114,13 @@ class InvertedIndex:
             #            print (processData[1])
             #            print (processData[2])
             #            print (doc.title[:12])
-            print(indexitemlist)
+#        print(indexitemlist)
+        items = indexitemlist
+        jsonEncoded = jsonpickle.encode(items)
+        print(jsonEncoded)
+        fh = open('index_file', 'a')
+        fh.write(jsonEncoded)
+        fh.close
 
     def sort(self):
         ''' sort all posting lists by docID'''
@@ -125,6 +132,7 @@ class InvertedIndex:
     def save(self, filename):
         ''' save to disk'''
         # ToDo: using your preferred method to serialize/deserialize the index
+
 
     def load(self, filename):
         ''' load from disk'''
