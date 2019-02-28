@@ -116,7 +116,7 @@ class InvertedIndex:
             #            print (doc.title[:12])
 #        print(indexitemlist)
         self.items = indexitemlist
-        self.save("index_file")
+
 
     def sort(self):
         ''' sort all posting lists by docID'''
@@ -132,7 +132,7 @@ class InvertedIndex:
   #      print(jsonEncoded)
         fh = open(filename, 'a')
         fh.write(jsonEncoded)
-        fh.close
+        #fh.close
 
     def load(self, filename):
         ''' load from disk'''
@@ -158,6 +158,8 @@ def indexingCranfield():
     iindex = InvertedIndex()
     for doc in cf.docs:
         iindex.indexDoc(doc)
+        iindex.save("index_file.txt")
+    print("Index builded successfully")
     #print(iindex.items)
 
 
