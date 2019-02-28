@@ -12,7 +12,6 @@ Index structure:
 '''
 import util
 import re
-# import doc
 from cran import CranFile
 from tokenize import tokenize, untokenize, NUMBER, STRING, NAME, OP
 
@@ -70,45 +69,29 @@ class InvertedIndex:
         # (2) remove stopwords,
         # (3) stemming
 
-        indexitemlist = []
-#        if doc.docID == '1':
-#            print(doc.docID)
         titletoken = re.split(" ", doc.title.replace('\n', ' '))
         titletoken = ' '.join(titletoken).split()
         bodytoken = re.split(" ", doc.body.replace('\n', ' '))
         bodytoken = ' '.join(bodytoken).split()
         tokens = titletoken + bodytoken
         tokens = [element.lower() for element in tokens];
-# print (tokens)
-# capturing useful information before preprocessing and stemming
+
         k = 0
         positionindoc = 1
         while k < len(tokens):
-#                print(tokens[k])
-                tuple = (doc.docID, tokens[k] ,positionindoc)
-
 
                 tempindexitem = IndexItem(tokens[k])
-                isaddable = None
 
 
                 if (tokens[k] in self.items ):
                     self.items.get(tokens[k]).add(doc.docID, positionindoc)
-                    #indexitemlist.append(tempindexitem)
+
                 else:
                     tempindexitem.add(doc.docID, positionindoc)
                     self.items[tokens[k]] = tempindexitem
 
                 positionindoc = positionindoc + len(tokens[k]) + 1;
                 k = k + 1
-
-            #            print (processData[0])
-            #            print (processData[1])
-            #            print (processData[2])
-            #            print (doc.title[:12])
-#        print(indexitemlist)
-
-
 
     def sort(self):
         ''' sort all posting lists by docID'''
@@ -153,7 +136,6 @@ def indexingCranfield():
 
     iindex.save("index_file.txt")
     print("Index builded successfully")
-    #print(iindex.items)
 
 
 if __name__ == '__main__':
