@@ -69,7 +69,7 @@ class InvertedIndex:
         # (1) convert to lower cases,
         # (2) remove stopwords,
         # (3) stemming
-        processData = []
+
         indexitemlist = []
 #        if doc.docID == '1':
 #            print(doc.docID)
@@ -87,25 +87,17 @@ class InvertedIndex:
 #                print(tokens[k])
                 tuple = (doc.docID, tokens[k] ,positionindoc)
 
-                processData.append(tuple)
+
                 tempindexitem = IndexItem(tokens[k])
                 isaddable = None
-                if k == 0:
+
+
+                if (tokens[k] in self.items ):
+                    self.items.get(tokens[k]).add(doc.docID, positionindoc)
+                    #indexitemlist.append(tempindexitem)
+                else:
                     tempindexitem.add(doc.docID, positionindoc)
-                    indexitemlist.append(tempindexitem)
-                for x in indexitemlist:
-                    if x.term != tokens[k]:
-                        isaddable = True
-                    else:
-                        if k!= 0:
-                            isaddable = False
-                            x.posting.get(doc.docID).append(positionindoc)
-                        break
-                if isaddable:
-
-                    tempindexitem.add(doc.docID,positionindoc)
-                    indexitemlist.append(tempindexitem)
-
+                    self.items[tokens[k]] = tempindexitem
 
                 positionindoc = positionindoc + len(tokens[k]) + 1;
                 k = k + 1
@@ -115,7 +107,7 @@ class InvertedIndex:
             #            print (processData[2])
             #            print (doc.title[:12])
 #        print(indexitemlist)
-        self.items = indexitemlist
+
 
 
     def sort(self):
@@ -158,7 +150,8 @@ def indexingCranfield():
     iindex = InvertedIndex()
     for doc in cf.docs:
         iindex.indexDoc(doc)
-        iindex.save("index_file.txt")
+
+    iindex.save("index_file.txt")
     print("Index builded successfully")
     #print(iindex.items)
 
