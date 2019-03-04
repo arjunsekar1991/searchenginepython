@@ -72,6 +72,7 @@ class InvertedIndex:
         # (1) convert to lower cases,
         # (2) remove stopwords,
         # (3) stemming
+        # after applying step1  there are 12236 items
         self.nDocs = self.nDocs + 1;
         titletoken = re.split(" ", doc.title.replace('\n', ' '))
         titletoken = ' '.join(titletoken).split()
