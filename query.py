@@ -3,7 +3,8 @@
 query processing
 
 '''
-
+from cranqry import loadCranQry
+from index import InvertedIndex
 class QueryProcessor:
 
     def __init__(self, query, index, collection):
@@ -35,7 +36,7 @@ class QueryProcessor:
 
 def test():
     ''' test your code thoroughly. put the testing cases here'''
-    print 'Pass'
+    print('Pass')
 
 def query():
     ''' the main query processing program, using QueryProcessor'''
@@ -45,7 +46,13 @@ def query():
     # for booleanQuery, the program will print the total number of documents and the list of docuement IDs
     # for vectorQuery, the program will output the top 3 most similar documents
 
+    qrys = loadCranQry('query.text')
+    for q in qrys:
+        print(q, qrys[q].text)
 
+    loadiindex = InvertedIndex()
+    loadiindex = loadiindex.load("index_file.json")
+    print("index loaded")
 if __name__ == '__main__':
     #test()
     query()
