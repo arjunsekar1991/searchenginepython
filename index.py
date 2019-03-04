@@ -21,19 +21,23 @@ class Posting:
     def __init__(self, docID):
         self.docID = docID
         self.positions = []
-
+        self.termfreq = 0;
     def append(self, pos):
         self.positions.append(pos)
-
+         #adding term frequency here
+        self.termfreq  = self.termfreq+1;
     def sort(self):
         ''' sort positions'''
         self.positions.sort()
 
     def merge(self, positions):
         self.positions.extend(positions)
+        #this will add the term frequency of the merged posting with existing posting . helpful during merging same terms after preprocessing 
+        self.termfreq = self.termfreq + positions.length
 
     def term_freq(self):
         ''' return the term frequency in the document'''
+        return self.termfreq
         # ToDo
 
 
@@ -68,7 +72,7 @@ class InvertedIndex:
         # (1) convert to lower cases,
         # (2) remove stopwords,
         # (3) stemming
-
+        self.nDocs = self.nDocs + 1;
         titletoken = re.split(" ", doc.title.replace('\n', ' '))
         titletoken = ' '.join(titletoken).split()
         bodytoken = re.split(" ", doc.body.replace('\n', ' '))
@@ -103,7 +107,7 @@ class InvertedIndex:
     def save(self, filename):
         ''' save to disk'''
         # ToDo: using your preferred method to serialize/deserialize the index
-        jsonEncoded = jsonpickle.encode(self.items)
+        jsonEncoded = jsonpickle.encode(self)
   #      print(jsonEncoded)
         fh = open(filename, 'a')
         fh.write(jsonEncoded)
@@ -112,6 +116,13 @@ class InvertedIndex:
     def load(self, filename):
         ''' load from disk'''
         # ToDo
+
+        f = open("index_file.json", "r")
+        jsonString = f.read()
+#        print(jsonString)
+        self = jsonpickle.decode(jsonString)
+        print(self.items.keys().__len__())
+        return self
 
     def idf(self, term):
         ''' compute the inverted document frequency for a given term'''
@@ -134,9 +145,11 @@ def indexingCranfield():
     for doc in cf.docs:
         iindex.indexDoc(doc)
 
-    iindex.save("index_file.txt")
+    iindex.save("index_file.json")
     print("Index builded successfully")
-
+    loadiindex = InvertedIndex()
+    loadiindex = loadiindex.load("index_file.json")
+    print("index loaded")
 
 if __name__ == '__main__':
     # test()
