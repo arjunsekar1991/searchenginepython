@@ -5,12 +5,13 @@ query processing
 '''
 from cranqry import loadCranQry
 from index import InvertedIndex
+from cran import CranFile
 class QueryProcessor:
 
     def __init__(self, query, index, collection):
         ''' index is the inverted index; collection is the document collection'''
         self.raw_query = query
-        self.index
+        self.index = index
         self.docs = collection
 
     def preprocessing(self):
@@ -18,7 +19,9 @@ class QueryProcessor:
             also use the provided spelling corrector. Note that
             spelling corrector should be applied before stopword
             removal and stemming (why?)'''
-
+        self.raw_query
+        self.index
+        self.docs
         #ToDo: return a list of terms
 
 
@@ -47,12 +50,17 @@ def query():
     # for vectorQuery, the program will output the top 3 most similar documents
 
     qrys = loadCranQry('query.text')
-    for q in qrys:
-        print(q, qrys[q].text)
+#    for q in qrys:
+#        print(q, qrys[q].text)
 
     loadiindex = InvertedIndex()
     loadiindex = loadiindex.load("index_file.json")
-    print("index loaded")
+#    print("index loaded")
+
+    cf = CranFile('cran.all')
+
+    queryProcessor = QueryProcessor(qrys, loadiindex, cf.docs)
+    queryProcessor.preprocessing()
 if __name__ == '__main__':
     #test()
     query()
