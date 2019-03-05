@@ -12,30 +12,36 @@ Index structure:
 '''
 import util
 import re
-# import doc
 from cran import CranFile
 from tokenize import tokenize, untokenize, NUMBER, STRING, NAME, OP
-
+from nltk.stem import PorterStemmer
+from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.stem.snowball import SnowballStemmer
 import json, codecs
 import jsonpickle
+import string
 class Posting:
     def __init__(self, docID):
         self.docID = docID
         self.positions = []
-
+        self.termfreq = 0;
     def append(self, pos):
         self.positions.append(pos)
-
+         #adding term frequency here
+        self.termfreq  = self.termfreq+1;
     def sort(self):
         ''' sort positions'''
         self.positions.sort()
 
     def merge(self, positions):
         self.positions.extend(positions)
+        #this will add the term frequency of the merged posting with existing posting . helpful during merging same terms after preprocessing 
+        self.termfreq = self.termfreq + positions.length
 
     def term_freq(self):
         ''' return the term frequency in the document'''
-        # ToDo
+        return self.termfreq
+
 
 
 class IndexItem:
@@ -69,62 +75,47 @@ class InvertedIndex:
         # (1) convert to lower cases,
         # (2) remove stopwords,
         # (3) stemming
-        processData = []
-        indexitemlist = []
-#        if doc.docID == '1':
-#            print(doc.docID)
-        titletoken = re.split(" ", doc.title.replace('\n', ' '))
-        titletoken = ' '.join(titletoken).split()
-        bodytoken = re.split(" ", doc.body.replace('\n', ' '))
-        bodytoken = ' '.join(bodytoken).split()
+        # after applying step1  there are 12236 items
+        # after applying step3  there are 9666 items
+        # after applying step2  there are 9567 items
+        self.nDocs = self.nDocs + 1;
+        titletoken = word_tokenize(doc.title)
+        bodytoken = word_tokenize(doc.body)
+#        titletoken = re.split(" ", doc.title.replace('\n', ' '))
+#        titletoken = ' '.join(titletoken).split()
+#        bodytoken = re.split(" ", doc.body.replace('\n', ' '))
+#        bodytoken = ' '.join(bodytoken).split()
         tokens = titletoken + bodytoken
         tokens = [element.lower() for element in tokens];
-# print (tokens)
-# capturing useful information before preprocessing and stemming
+
         k = 0
         positionindoc = 1
         while k < len(tokens):
-#                print(tokens[k])
-                tuple = (doc.docID, tokens[k] ,positionindoc)
 
-                processData.append(tuple)
                 tempindexitem = IndexItem(tokens[k])
-                isaddable = None
-                if k == 0:
+
+                #
+
+                #stemming comes here
+                ps = PorterStemmer()
+             #   punctuation = "()/\\"
+             #   tokens[k] = "".join([ch for ch in tokens[k] if ch not in punctuation])
+                stemmedToken = ps.stem(tokens[k])
+
+                if (stemmedToken in self.items ):
+                    self.items.get(stemmedToken).add(doc.docID, positionindoc)
+
+                else:
                     tempindexitem.add(doc.docID, positionindoc)
-                    indexitemlist.append(tempindexitem)
-                for x in indexitemlist:
-                    if x.term != tokens[k]:
-                        isaddable = True
-                    else:
-                        if k!= 0:
-                            isaddable = False
-                            x.posting.get(doc.docID).append(positionindoc)
-                        break
-                if isaddable:
-
-                    tempindexitem.add(doc.docID,positionindoc)
-                    indexitemlist.append(tempindexitem)
-
+                    self.items[stemmedToken] = tempindexitem
 
                 positionindoc = positionindoc + len(tokens[k]) + 1;
                 k = k + 1
 
-            #            print (processData[0])
-            #            print (processData[1])
-            #            print (processData[2])
-            #            print (doc.title[:12])
-#        print(indexitemlist)
-        items = indexitemlist
-        jsonEncoded = jsonpickle.encode(items)
-        print(jsonEncoded)
-        fh = open('index_file', 'a')
-        fh.write(jsonEncoded)
-        fh.close
-
     def sort(self):
         ''' sort all posting lists by docID'''
         # ToDo
+        # while creating postings i created them in the order sorted by doc id hence not doing anything here
 
     def find(self, term):
         return self.items[term]
@@ -132,11 +123,22 @@ class InvertedIndex:
     def save(self, filename):
         ''' save to disk'''
         # ToDo: using your preferred method to serialize/deserialize the index
-
+        jsonEncoded = jsonpickle.encode(self)
+  #      print(jsonEncoded)
+        fh = open(filename, 'a')
+        fh.write(jsonEncoded)
+        #fh.close
 
     def load(self, filename):
         ''' load from disk'''
         # ToDo
+
+        f = open("index_file.json", "r")
+        jsonString = f.read()
+#        print(jsonString)
+        self = jsonpickle.decode(jsonString)
+        print(self.items.keys().__len__())
+        return self
 
     def idf(self, term):
         ''' compute the inverted document frequency for a given term'''
@@ -158,43 +160,15 @@ def indexingCranfield():
     iindex = InvertedIndex()
     for doc in cf.docs:
         iindex.indexDoc(doc)
-    print(iindex.items)
-    """  
-    indexitemlist = []
-    for doc in cf.docs:
-        if doc.docID == "1":
-            titletoken = re.split(" ",  doc.title.replace('\n', ' '))
-            titletoken = ' '.join(titletoken).split()
-            bodytoken = re.split(" ",  doc.body.replace('\n', ' '))
-            bodytoken = ' '.join(bodytoken).split()
-            tokens = titletoken+bodytoken
-            #print(tokens)
-            k =0
-            positionindoc = 0
-            while k < len(tokens):
-                # print(positionindoc)
-                print(tokens[k])
+    # doing  stop word removal here ?
+    with open("stopwords") as f:
+        for line in f:
+            if line.strip() in iindex.items:
+                del iindex.items[line.strip()]
+    # Do something with 'line'
 
-                indexItem = IndexItem(tokens[k])
-                docId = 1
-                indexItem.add(doc.docID, positionindoc)
-                print(indexItem.term)
-                print(indexItem.posting.values())
-                    # indexitemlist.append(indexItem)
-                positionindoc = positionindoc + len(tokens[k]) + 1
-                indexitemlist.append(indexItem)
-                # print(len(tokens[k]))
-
-                k = k + 1
-
-
-            #print(indexItem.add(doc.docID,))
-           # print()
-  #  print(len(cf.docs))
-
-    print(indexitemlist[0])
-    print(indexitemlist[0].posting)
-    #print(indexitemlist)"""
+    iindex.save("index_file.json")
+    print("Index builded successfully")
 
 
 if __name__ == '__main__':
