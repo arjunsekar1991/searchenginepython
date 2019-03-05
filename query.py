@@ -103,7 +103,7 @@ def query():
     queryProcessor = QueryProcessor(qrys, loadiindex, cf.docs)
     queryProcessor.preprocessing()
     results = queryProcessor.booleanQuery()
-
+ 
 if __name__ == '__main__':
     #test()
     query()
