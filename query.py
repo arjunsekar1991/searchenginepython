@@ -67,6 +67,8 @@ class QueryProcessor:
                 if templist[i] in self.index.items:
 #                        print(list(self.index.items.get(templist[i]).get('posting').keys()))
                         resultsDocIds.append(list(self.index.items.get(templist[i]).get('posting').keys()))
+                else:
+                        resultsDocIds.append(list([0]))
                 i = i + 1
             print(reduce(np.intersect1d, resultsDocIds))
 
