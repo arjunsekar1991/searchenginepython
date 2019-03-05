@@ -6,6 +6,11 @@ query processing
 from cranqry import loadCranQry
 from index import InvertedIndex
 from cran import CranFile
+import re
+import numpy as np
+from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.stem import PorterStemmer
+from functools import reduce
 class QueryProcessor:
 
     def __init__(self, query, index, collection):
@@ -13,21 +18,57 @@ class QueryProcessor:
         self.raw_query = query
         self.index = index
         self.docs = collection
+        self.preprocessed_query_tokens = {}
 
     def preprocessing(self):
         ''' apply the same preprocessing steps used by indexing,
             also use the provided spelling corrector. Note that
             spelling corrector should be applied before stopword
             removal and stemming (why?)'''
-        self.raw_query
-        self.index
-        self.docs
+
         #ToDo: return a list of terms
+
+
+        for q in self.raw_query:
+            query_tokens = []
+            stemmed_query_tokens = []
+#            print(q, self.raw_query[q].text)
+         #   query_tokens = re.split(" ", self.raw_query[q].text.replace('\n', ' '))
+            query_tokens = word_tokenize(self.raw_query[q].text)
+            query_tokens = [element.lower() for element in query_tokens];
+            ps = PorterStemmer()
+            temp = 0
+            querytokentemp = 0
+            while temp < len(query_tokens):
+
+                query_tokens[temp] = ps.stem(query_tokens[temp])
+                querytokentemp = querytokentemp + 1
+                with open("stopwords") as f:
+                    for line in f:
+                        if line.strip() == query_tokens[temp]:
+                            query_tokens.remove(line.strip())
+                            temp = temp - 1
+                temp = temp + 1
+            self.preprocessed_query_tokens[q] = query_tokens
 
 
     def booleanQuery(self):
         ''' boolean query processing; note that a query like "A B C" is transformed to "A AND B AND C" for retrieving posting lists and merge them'''
         #ToDo: return a list of docIDs
+        resultsDocIds = []
+        for q in self.preprocessed_query_tokens:
+            print(q)# this prints query id
+            templist = self.preprocessed_query_tokens.get(q)
+            print(templist)
+            i = 0
+            while i < len(templist):
+                print("query token --> " + templist[i])
+                if templist[i] in self.index.items:
+                        print(list(self.index.items.get(templist[i]).get('posting').keys()))
+                i = i + 1
+#            reduce(np.intersect1d, ([1, 3, 4, 3], [3, 1, 2, 1], [6, 3, 4, 2]))
+
+        return resultsDocIds
 
 
     def vectorQuery(self, k):
@@ -61,6 +102,8 @@ def query():
 
     queryProcessor = QueryProcessor(qrys, loadiindex, cf.docs)
     queryProcessor.preprocessing()
+    results = queryProcessor.booleanQuery()
+    print (results)
 if __name__ == '__main__':
     #test()
     query()

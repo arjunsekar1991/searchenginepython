@@ -15,6 +15,7 @@ import re
 from cran import CranFile
 from tokenize import tokenize, untokenize, NUMBER, STRING, NAME, OP
 from nltk.stem import PorterStemmer
+from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.stem.snowball import SnowballStemmer
 import json, codecs
 import jsonpickle
@@ -78,10 +79,12 @@ class InvertedIndex:
         # after applying step3  there are 9666 items
         # after applying step2  there are 9567 items
         self.nDocs = self.nDocs + 1;
-        titletoken = re.split(" ", doc.title.replace('\n', ' '))
-        titletoken = ' '.join(titletoken).split()
-        bodytoken = re.split(" ", doc.body.replace('\n', ' '))
-        bodytoken = ' '.join(bodytoken).split()
+        titletoken = word_tokenize(doc.title)
+        bodytoken = word_tokenize(doc.body)
+#        titletoken = re.split(" ", doc.title.replace('\n', ' '))
+#        titletoken = ' '.join(titletoken).split()
+#        bodytoken = re.split(" ", doc.body.replace('\n', ' '))
+#        bodytoken = ' '.join(bodytoken).split()
         tokens = titletoken + bodytoken
         tokens = [element.lower() for element in tokens];
 
