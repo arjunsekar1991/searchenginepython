@@ -55,20 +55,20 @@ class QueryProcessor:
     def booleanQuery(self):
         ''' boolean query processing; note that a query like "A B C" is transformed to "A AND B AND C" for retrieving posting lists and merge them'''
         #ToDo: return a list of docIDs
-        resultsDocIds = []
+
         for q in self.preprocessed_query_tokens:
+            resultsDocIds = []
             print(q)# this prints query id
             templist = self.preprocessed_query_tokens.get(q)
-            print(templist)
+#            print(templist)
             i = 0
             while i < len(templist):
-                print("query token --> " + templist[i])
+#                print("query token --> " + templist[i])
                 if templist[i] in self.index.items:
-                        print(list(self.index.items.get(templist[i]).get('posting').keys()))
+#                        print(list(self.index.items.get(templist[i]).get('posting').keys()))
+                        resultsDocIds.append(list(self.index.items.get(templist[i]).get('posting').keys()))
                 i = i + 1
-#            reduce(np.intersect1d, ([1, 3, 4, 3], [3, 1, 2, 1], [6, 3, 4, 2]))
-
-        return resultsDocIds
+            print(reduce(np.intersect1d, resultsDocIds))
 
 
     def vectorQuery(self, k):
@@ -103,7 +103,7 @@ def query():
     queryProcessor = QueryProcessor(qrys, loadiindex, cf.docs)
     queryProcessor.preprocessing()
     results = queryProcessor.booleanQuery()
-    print (results)
+
 if __name__ == '__main__':
     #test()
     query()
