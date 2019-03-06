@@ -18,6 +18,8 @@ from nltk.stem import PorterStemmer
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.stem.snowball import SnowballStemmer
 import json, codecs
+import numpy as np
+import math
 import jsonpickle
 import string
 class Posting:
@@ -25,6 +27,7 @@ class Posting:
         self.docID = docID
         self.positions = []
         self.termfreq = 0;
+
     def append(self, pos):
         self.positions.append(pos)
          #adding term frequency here
@@ -48,6 +51,7 @@ class IndexItem:
     def __init__(self, term):
         self.term = term
         self.posting = {}  # postings are stored in a python dict for easier index building
+        self.idf = 0;
         #self.sorted_posting s= [] # may sort them by docID for easier query processing
 
     def add(self, docid, pos):
@@ -110,6 +114,7 @@ class InvertedIndex:
                     self.items[stemmedToken] = tempindexitem
 
                 positionindoc = positionindoc + len(tokens[k]) + 1;
+
                 k = k + 1
 
     def sort(self):
@@ -143,6 +148,8 @@ class InvertedIndex:
     def idf(self, term):
         ''' compute the inverted document frequency for a given term'''
         # ToDo: return the IDF of the term
+        rawvalue = self.nDocs/(len(list(self.items[term].posting.keys())))
+        self.items[term].idf = math.log(rawvalue,10)
 
     # more methods if needed
 
@@ -166,6 +173,11 @@ def indexingCranfield():
             if line.strip() in iindex.items:
                 del iindex.items[line.strip()]
     # Do something with 'line'
+
+    for terms in iindex.items:
+#        print(terms)
+        iindex.idf(terms)
+
 
     iindex.save("index_file.json")
     print("Index builded successfully")
