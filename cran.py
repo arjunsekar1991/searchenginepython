@@ -38,12 +38,12 @@ class CranFile:
                 buf = '' # skip affiliation
             else:
                 buf += line
-        self.docs.append(Document(docid, title, author, body)) # the last one
+        self.docs.append(Document(docid, title, author, buf)) # the last one
 
 if __name__ == '__main__':
     ''' testing '''
 
     cf = CranFile ('cran.all')
     for doc in cf.docs:
-        print(doc.docID, doc.title)
+        print(doc.docID, doc.title, doc.body)
     print(len(cf.docs))
