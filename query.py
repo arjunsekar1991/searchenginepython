@@ -14,6 +14,7 @@ from nltk.stem import PorterStemmer
 from functools import reduce
 from collections import Counter
 import math
+import decimal
 class QueryProcessor:
 
     def __init__(self, query, index, collection):
@@ -86,7 +87,7 @@ class QueryProcessor:
         documentVector = {}
         queryVector = {}
         ps = PorterStemmer()
-
+        finalResult = {}
         for q in self.raw_query:
             query_tokens = []
             stemmed_query_tokens = []
@@ -143,8 +144,27 @@ class QueryProcessor:
                         documentVector[tokens[temp2]] = 0;
                         temp2 = temp2 + 1
 #                print('document vector complete')
+                #print(documentVector)
+                # without normalization
+                cosineVector = documentVector.copy()
+                for k in queryVector:
+                    if k in cosineVector:
+                        cosineVector[k] = np.multiply(documentVector[k], queryVector[k])
+                    else:
+                        cosineVector[k] = queryVector[k]
+                print ("query vector -->")
+                print(queryVector)
+                print ("document vector -->")
+                print( documentVector)
+                print ("cosine vector -->")
+                print(cosineVector)
+                print ("****************************")
+                cosineVector = {}
+                #end without normalization
+
                 documentVector = {}
             queryVector = {}
+
             print(query_tokens)
 
 
