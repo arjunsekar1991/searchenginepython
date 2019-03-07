@@ -8,9 +8,12 @@ from index import InvertedIndex
 from cran import CranFile
 import re
 import numpy as np
+from nltk.stem import PorterStemmer
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.stem import PorterStemmer
 from functools import reduce
+from collections import Counter
+import math
 class QueryProcessor:
 
     def __init__(self, query, index, collection):
@@ -77,6 +80,73 @@ class QueryProcessor:
         ''' vector query processing, using the cosine similarity. '''
         #ToDo: return top k pairs of (docID, similarity), ranked by their cosine similarity with the query in the descending order
         # You can use term frequency or TFIDF to construct the vectors
+        #constructing document vector for document 1
+
+        cf = CranFile('cran.all')
+        documentVector = {}
+        queryVector = {}
+        ps = PorterStemmer()
+
+        for q in self.raw_query:
+            query_tokens = []
+            stemmed_query_tokens = []
+            #            print(q, self.raw_query[q].text)
+            #   query_tokens = re.split(" ", self.raw_query[q].text.replace('\n', ' '))
+            query_tokens = word_tokenize(self.raw_query[q].text)
+            query_tokens = [element.lower() for element in query_tokens];
+            ps = PorterStemmer()
+            temp = 0
+            querytokentemp = 0
+            while temp < len(query_tokens):
+
+                query_tokens[temp] = ps.stem(query_tokens[temp])
+                querytokentemp = querytokentemp + 1
+                with open("stopwords") as f:
+                    for line in f:
+                        if line.strip() == query_tokens[temp]:
+                            query_tokens.remove(line.strip())
+                            temp = temp - 1
+                temp = temp + 1
+
+            #block to calculate query vector start
+
+            temp2 = 0
+            while temp2 < len(query_tokens):
+                if query_tokens[temp2] in self.index.items:
+                    wordfreq = [query_tokens.count(query_tokens[temp2])]
+   #                 print(wordfreq)
+                    queryVector[query_tokens[temp2]] = self.index.items[query_tokens[temp2]].get('idf') * wordfreq[0]
+                    temp2 = temp2 + 1
+                else:
+                    documentVector[tokens[temp2]] = 0;
+                    temp2 = temp2 + 1
+            #block to calculate query vector end
+
+            for doc in cf.docs:
+#                print(doc.docID, doc.title, doc.body)
+
+#                print("generating document vector here")
+                titletoken = word_tokenize(doc.title)
+                bodytoken = word_tokenize(doc.body)
+                tokens = titletoken + bodytoken
+                tokens = [element.lower() for element in tokens];
+                temp = 0
+                while temp < len(tokens):
+                    tokens[temp] = ps.stem(tokens[temp])
+                    temp = temp + 1
+                    temp2 = 0
+                while temp2 < len(tokens):
+                    if tokens[temp2] in self.index.items:
+                        documentVector[tokens[temp2]] = 1 + math.log(self.index.items[tokens[temp2]].get('posting').get(doc.docID).get('termfreq'),10)
+                        temp2 = temp2 + 1
+                    else:
+                        documentVector[tokens[temp2]] = 0;
+                        temp2 = temp2 + 1
+#                print('document vector complete')
+                documentVector = {}
+            queryVector = {}
+            print(query_tokens)
+
 
 
 
@@ -104,7 +174,8 @@ def query():
 
     queryProcessor = QueryProcessor(qrys, loadiindex, cf.docs)
     queryProcessor.preprocessing()
-    results = queryProcessor.booleanQuery()
+#    results = queryProcessor.booleanQuery()
+    results = queryProcessor.vectorQuery(1)
 
 if __name__ == '__main__':
     #test()
