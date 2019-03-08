@@ -23,6 +23,7 @@ class QueryProcessor:
         self.index = index
         self.docs = collection
         self.preprocessed_query_tokens = {}
+        self.intermediateResultVectorQuery = {}
 
     def preprocessing(self):
         ''' apply the same preprocessing steps used by indexing,
@@ -89,83 +90,106 @@ class QueryProcessor:
         ps = PorterStemmer()
         finalResult = {}
         for q in self.raw_query:
-            query_tokens = []
-            stemmed_query_tokens = []
-            #            print(q, self.raw_query[q].text)
-            #   query_tokens = re.split(" ", self.raw_query[q].text.replace('\n', ' '))
-            query_tokens = word_tokenize(self.raw_query[q].text)
-            query_tokens = [element.lower() for element in query_tokens];
-            ps = PorterStemmer()
-            temp = 0
-            querytokentemp = 0
-            while temp < len(query_tokens):
-
-                query_tokens[temp] = ps.stem(query_tokens[temp])
-                querytokentemp = querytokentemp + 1
-                with open("stopwords") as f:
-                    for line in f:
-                        if line.strip() == query_tokens[temp]:
-                            query_tokens.remove(line.strip())
-                            temp = temp - 1
-                temp = temp + 1
-
-            #block to calculate query vector start
-
-            temp2 = 0
-            while temp2 < len(query_tokens):
-                if query_tokens[temp2] in self.index.items:
-                    wordfreq = [query_tokens.count(query_tokens[temp2])]
-   #                 print(wordfreq)
-                    queryVector[query_tokens[temp2]] = self.index.items[query_tokens[temp2]].get('idf') * wordfreq[0]
-                    temp2 = temp2 + 1
-                else:
-                    documentVector[tokens[temp2]] = 0;
-                    temp2 = temp2 + 1
-            #block to calculate query vector end
-
-            for doc in cf.docs:
-#                print(doc.docID, doc.title, doc.body)
-
-#                print("generating document vector here")
-                titletoken = word_tokenize(doc.title)
-                bodytoken = word_tokenize(doc.body)
-                tokens = titletoken + bodytoken
-                tokens = [element.lower() for element in tokens];
+            if q == '142':
+                query_tokens = []
+                stemmed_query_tokens = []
+                #            print(q, self.raw_query[q].text)
+                #   query_tokens = re.split(" ", self.raw_query[q].text.replace('\n', ' '))
+                query_tokens = word_tokenize(self.raw_query[q].text)
+                query_tokens = [element.lower() for element in query_tokens];
+                ps = PorterStemmer()
                 temp = 0
-                while temp < len(tokens):
-                    tokens[temp] = ps.stem(tokens[temp])
+                querytokentemp = 0
+                while temp < len(query_tokens):
+
+                    query_tokens[temp] = ps.stem(query_tokens[temp])
+                    querytokentemp = querytokentemp + 1
+                    with open("stopwords") as f:
+                        for line in f:
+                            if line.strip() == query_tokens[temp]:
+                                query_tokens.remove(line.strip())
+                                temp = temp - 1
                     temp = temp + 1
-                    temp2 = 0
-                while temp2 < len(tokens):
-                    if tokens[temp2] in self.index.items:
-                        documentVector[tokens[temp2]] = 1 + math.log(self.index.items[tokens[temp2]].get('posting').get(doc.docID).get('termfreq'),10)
+
+                #block to calculate query vector start
+
+                temp2 = 0
+                while temp2 < len(query_tokens):
+                    if query_tokens[temp2] in self.index.items:
+                        wordfreq = [query_tokens.count(query_tokens[temp2])]
+       #                 print(wordfreq)
+                        queryVector[query_tokens[temp2]] = self.index.items[query_tokens[temp2]].get('idf') * wordfreq[0]
                         temp2 = temp2 + 1
                     else:
                         documentVector[tokens[temp2]] = 0;
                         temp2 = temp2 + 1
-#                print('document vector complete')
-                #print(documentVector)
-                # without normalization
-                cosineVector = documentVector.copy()
-                for k in queryVector:
-                    if k in cosineVector:
-                        cosineVector[k] = np.multiply(documentVector[k], queryVector[k])
-                    else:
-                        cosineVector[k] = queryVector[k]
-                print ("query vector -->")
-                print(queryVector)
-                print ("document vector -->")
-                print( documentVector)
-                print ("cosine vector -->")
-                print(cosineVector)
-                print ("****************************")
-                cosineVector = {}
-                #end without normalization
+                #block to calculate query vector end
+                docidScorepair = {}
+                for doc in cf.docs:
+    #                print(doc.docID, doc.title, doc.body)
 
-                documentVector = {}
-            queryVector = {}
+    #                print("generating document vector here")
+                    titletoken = word_tokenize(doc.title)
+                    bodytoken = word_tokenize(doc.body)
+                    tokens = titletoken + bodytoken
+                    tokens = [element.lower() for element in tokens];
+                    temp3 = 0
+                    while temp3 < len(tokens):
+                        with open("stopwords") as f:
+                            for line in f:
+                                if line.strip() == tokens[temp3]:
+                                    tokens.remove(line.strip())
+                                    temp3 = temp3 - 1
+                        temp3 = temp3 + 1
+                    temp = 0
+                    while temp < len(tokens):
+                        tokens[temp] = ps.stem(tokens[temp])
+                        temp = temp + 1
+                        temp2 = 0
+                    while temp2 < len(tokens):
+                        if tokens[temp2] in self.index.items:
+                            documentVector[tokens[temp2]] = 1 + math.log(self.index.items[tokens[temp2]].get('posting').get(doc.docID).get('termfreq'),10)
+                            temp2 = temp2 + 1
+                        else:
+                            documentVector[tokens[temp2]] = 0;
+                            temp2 = temp2 + 1
+    #                print('document vector complete')
+                    #print(documentVector)
+                    # without normalization
 
-            print(query_tokens)
+
+                    cosineVector = queryVector.copy()
+                    for k in queryVector:
+                        if k in documentVector:
+                            cosineVector[k] = np.multiply(documentVector[k], queryVector[k])
+                        else:
+                            #below line is wrong
+#                            cosineVector[k] = queryVector[k]
+                            cosineVector[k] = 0
+#                    print ("query vector -->")
+#                    print(queryVector)
+#                    print ("document vector -->")
+#                    print( documentVector)
+#                    print ("cosine vector -->")
+#                    print(cosineVector)
+#                    print ("****************************")
+                    # document score
+
+                    docidScorepair[doc.docID] = sum(cosineVector.values())
+                    #end of document score
+
+                    self.intermediateResultVectorQuery[q] = docidScorepair
+
+                    cosineVector = {}
+                    #end without normalization
+
+                    documentVector = {}
+                queryVector = {}
+
+                print(query_tokens)
+                counterObject = Counter(self.intermediateResultVectorQuery[q])
+                high = counterObject.most_common(10)
+                print (high)
 
 
 
@@ -195,7 +219,7 @@ def query():
     queryProcessor = QueryProcessor(qrys, loadiindex, cf.docs)
     queryProcessor.preprocessing()
 #    results = queryProcessor.booleanQuery()
-    results = queryProcessor.vectorQuery(1)
+    results = queryProcessor.vectorQuery(4)
 
 if __name__ == '__main__':
     #test()
