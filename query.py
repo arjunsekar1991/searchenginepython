@@ -90,7 +90,7 @@ class QueryProcessor:
         ps = PorterStemmer()
         finalResult = {}
         for q in self.raw_query:
-            if q == '142':
+            if q == '158':
                 query_tokens = []
                 stemmed_query_tokens = []
                 #            print(q, self.raw_query[q].text)
@@ -118,7 +118,7 @@ class QueryProcessor:
                     if query_tokens[temp2] in self.index.items:
                         wordfreq = [query_tokens.count(query_tokens[temp2])]
        #                 print(wordfreq)
-                        queryVector[query_tokens[temp2]] = self.index.items[query_tokens[temp2]].get('idf') * wordfreq[0]
+                        queryVector[query_tokens[temp2]] = (self.index.items[query_tokens[temp2]].get('idf') )* (1 + math.log( wordfreq[0] , 10))
                         temp2 = temp2 + 1
                     else:
                         documentVector[tokens[temp2]] = 0;
@@ -145,10 +145,10 @@ class QueryProcessor:
                     while temp < len(tokens):
                         tokens[temp] = ps.stem(tokens[temp])
                         temp = temp + 1
-                        temp2 = 0
+                    temp2 = 0
                     while temp2 < len(tokens):
                         if tokens[temp2] in self.index.items:
-                            documentVector[tokens[temp2]] = 1 + math.log(self.index.items[tokens[temp2]].get('posting').get(doc.docID).get('termfreq'),10)
+                            documentVector[tokens[temp2]] = (1 + math.log(self.index.items[tokens[temp2]].get('posting').get(doc.docID).get('termfreq'),10)) * (self.index.items[tokens[temp2]].get('idf'))
                             temp2 = temp2 + 1
                         else:
                             documentVector[tokens[temp2]] = 0;
@@ -157,15 +157,39 @@ class QueryProcessor:
                     #print(documentVector)
                     # without normalization
 
+                    #normalize query vector and document vector start
+                    normalizequeryvectorcounter = 0
+                    queryVectornormalized = []
+#                    sumofsquaresquery = 0
+#                    for z in queryVector:
+#                        sumofsquaresquery =  sumofsquaresquery + np.multiply(queryVector[z] , queryVector[z])
+#
+#                    sumofsquaresquery = 1 / math.sqrt(sumofsquaresquery)
+
+
+#                    for r in queryVector:
+#                        queryVector[r] = queryVector[r] *  sumofsquaresquery
+
+                    sumofsquaresdocument = 0
+                    for l in documentVector:
+                        sumofsquaresdocument = sumofsquaresdocument + np.multiply(documentVector[l], documentVector[l])
+                    try:
+                        sumofsquaresdocument = 1 / math.sqrt(sumofsquaresdocument)
+
+                    except:
+                        sumofsquaresdocument = 0
+                    for h in documentVector:
+                        documentVector[h] = documentVector[h] * sumofsquaresdocument
+                    #noramlize ends
 
                     cosineVector = queryVector.copy()
-                    for k in queryVector:
-                        if k in documentVector:
-                            cosineVector[k] = np.multiply(documentVector[k], queryVector[k])
+                    for u in queryVector:
+                        if u in documentVector:
+                            cosineVector[u] = np.multiply(documentVector[u], queryVector[u])
                         else:
                             #below line is wrong
 #                            cosineVector[k] = queryVector[k]
-                            cosineVector[k] = 0
+                            cosineVector[u] = 0
 #                    print ("query vector -->")
 #                    print(queryVector)
 #                    print ("document vector -->")
@@ -186,10 +210,11 @@ class QueryProcessor:
                     documentVector = {}
                 queryVector = {}
 
-                print(query_tokens)
+#                print(query_tokens)
                 counterObject = Counter(self.intermediateResultVectorQuery[q])
-                high = counterObject.most_common(10)
-                print (high)
+                high = counterObject.most_common(k)
+                print('*** query id ***'+q + "***** query text *****" +self.raw_query[q].text)
+                print(high)
 
 
 
@@ -219,7 +244,7 @@ def query():
     queryProcessor = QueryProcessor(qrys, loadiindex, cf.docs)
     queryProcessor.preprocessing()
 #    results = queryProcessor.booleanQuery()
-    results = queryProcessor.vectorQuery(4)
+    results = queryProcessor.vectorQuery(3)
 
 if __name__ == '__main__':
     #test()
