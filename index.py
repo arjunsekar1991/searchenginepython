@@ -22,6 +22,7 @@ import numpy as np
 import math
 import jsonpickle
 import string
+import sys
 class Posting:
     def __init__(self, docID):
         self.docID = docID
@@ -159,11 +160,11 @@ def test():
     print('Pass')
 
 
-def indexingCranfield():
+def indexingCranfield(collectionname, indexfilename):
     # ToDo: indexing the Cranfield dataset and save the index to a file
     # command line usage: "python index.py cran.all index_file"
     # the index is saved to index_file
-    cf = CranFile('cran.all')
+    cf = CranFile(collectionname)
     iindex = InvertedIndex()
     for doc in cf.docs:
         iindex.indexDoc(doc)
@@ -179,10 +180,11 @@ def indexingCranfield():
         iindex.idf(terms)
 
 
-    iindex.save("index_file.json")
+    iindex.save(indexfilename)
     print("Index builded successfully")
+
 
 
 if __name__ == '__main__':
     # test()
-    indexingCranfield()
+    indexingCranfield(str(sys.argv[1]), str(sys.argv[2]))
