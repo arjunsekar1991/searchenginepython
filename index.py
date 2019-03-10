@@ -139,11 +139,11 @@ class InvertedIndex:
         ''' load from disk'''
         # ToDo
 
-        f = open("index_file.json", "r")
+        f = open(filename, "r")
         jsonString = f.read()
 #        print(jsonString)
         self = jsonpickle.decode(jsonString)
-        print(self.items.keys().__len__())
+#        print(self.items.keys().__len__())
         return self
 
     def idf(self, term):

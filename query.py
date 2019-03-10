@@ -15,6 +15,7 @@ from functools import reduce
 from collections import Counter
 import math
 import decimal
+import sys
 class QueryProcessor:
 
     def __init__(self, query, index, collection):
@@ -24,6 +25,7 @@ class QueryProcessor:
         self.docs = collection
         self.preprocessed_query_tokens = {}
         self.intermediateResultVectorQuery = {}
+        self.queryId = 0
 
     def preprocessing(self):
         ''' apply the same preprocessing steps used by indexing,
@@ -62,20 +64,21 @@ class QueryProcessor:
         #ToDo: return a list of docIDs
 
         for q in self.preprocessed_query_tokens:
-            resultsDocIds = []
-            print(q)# this prints query id
-            templist = self.preprocessed_query_tokens.get(q)
-#            print(templist)
-            i = 0
-            while i < len(templist):
-#                print("query token --> " + templist[i])
-                if templist[i] in self.index.items:
-#                        print(list(self.index.items.get(templist[i]).get('posting').keys()))
-                        resultsDocIds.append(list(self.index.items.get(templist[i]).get('posting').keys()))
-                else:
-                        resultsDocIds.append(list([0]))
-                i = i + 1
-            print(reduce(np.intersect1d, resultsDocIds))
+            if q == self.queryId:
+                resultsDocIds = []
+#                print(q)# this prints query id
+                templist = self.preprocessed_query_tokens.get(q)
+    #            print(templist)
+                i = 0
+                while i < len(templist):
+    #                print("query token --> " + templist[i])
+                    if templist[i] in self.index.items:
+    #                        print(list(self.index.items.get(templist[i]).get('posting').keys()))
+                            resultsDocIds.append(list(self.index.items.get(templist[i]).get('posting').keys()))
+                    else:
+                            resultsDocIds.append(list([0]))
+                    i = i + 1
+                print(reduce(np.intersect1d, resultsDocIds))
 
 
     def vectorQuery(self, k):
@@ -90,7 +93,7 @@ class QueryProcessor:
         ps = PorterStemmer()
         finalResult = {}
         for q in self.raw_query:
-            if q == '158':
+            if q == self.queryId:
                 query_tokens = []
                 stemmed_query_tokens = []
                 #            print(q, self.raw_query[q].text)
@@ -213,7 +216,7 @@ class QueryProcessor:
 #                print(query_tokens)
                 counterObject = Counter(self.intermediateResultVectorQuery[q])
                 high = counterObject.most_common(k)
-                print('*** query id ***'+q + "***** query text *****" +self.raw_query[q].text)
+#                print('*** query id ***'+q + "***** query text *****" +self.raw_query[q].text)
                 print(high)
 
 
@@ -223,7 +226,7 @@ def test():
     ''' test your code thoroughly. put the testing cases here'''
     print('Pass')
 
-def query():
+def query( indexfilename,processingalgorithm,queryfilename, queryid):
     ''' the main query processing program, using QueryProcessor'''
 
     # ToDo: the commandline usage: "echo query_string | python query.py index_file processing_algorithm"
@@ -231,21 +234,26 @@ def query():
     # for booleanQuery, the program will print the total number of documents and the list of docuement IDs
     # for vectorQuery, the program will output the top 3 most similar documents
 
-    qrys = loadCranQry('query.text')
+    qrys = loadCranQry(queryfilename)
 #    for q in qrys:
 #        print(q, qrys[q].text)
 
     loadiindex = InvertedIndex()
-    loadiindex = loadiindex.load("index_file.json")
+    loadiindex = loadiindex.load(indexfilename)
 #    print("index loaded")
 
     cf = CranFile('cran.all')
 
     queryProcessor = QueryProcessor(qrys, loadiindex, cf.docs)
-    queryProcessor.preprocessing()
-#    results = queryProcessor.booleanQuery()
-    results = queryProcessor.vectorQuery(3)
+    if processingalgorithm == '0' :
+        queryProcessor.preprocessing()
+        queryProcessor.queryId = queryid
+        results = queryProcessor.booleanQuery()
+    if processingalgorithm == '1':
+        queryProcessor.queryId = queryid
+        results = queryProcessor.vectorQuery(3)
 
 if __name__ == '__main__':
     #test()
-    query()
+
+    query(str(sys.argv[1]), str(sys.argv[2]),str(sys.argv[3]),str(sys.argv[4]))
