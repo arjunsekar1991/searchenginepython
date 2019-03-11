@@ -13,6 +13,7 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.stem import PorterStemmer
 from functools import reduce
 from collections import Counter
+from norvig_spell import correction
 import math
 import decimal
 import sys
@@ -43,6 +44,10 @@ class QueryProcessor:
          #   query_tokens = re.split(" ", self.raw_query[q].text.replace('\n', ' '))
             query_tokens = word_tokenize(self.raw_query[q].text)
             query_tokens = [element.lower() for element in query_tokens];
+            tempcounter = 0
+            while tempcounter < len(query_tokens):
+                query_tokens[tempcounter] = correction(query_tokens[tempcounter]);
+                tempcounter = tempcounter + 1
             ps = PorterStemmer()
             temp = 0
             querytokentemp = 0
@@ -100,6 +105,10 @@ class QueryProcessor:
                 #   query_tokens = re.split(" ", self.raw_query[q].text.replace('\n', ' '))
                 query_tokens = word_tokenize(self.raw_query[q].text)
                 query_tokens = [element.lower() for element in query_tokens];
+                tempcounter = 0
+                while tempcounter < len(query_tokens):
+                    query_tokens[tempcounter] = correction(query_tokens[tempcounter]);
+                    tempcounter = tempcounter + 1
                 ps = PorterStemmer()
                 temp = 0
                 querytokentemp = 0

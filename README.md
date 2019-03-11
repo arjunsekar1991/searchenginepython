@@ -1,4 +1,6 @@
 # searchenginepython
+pip install pyspellchecker
+
 python index.py cran.all index_file
 
 python query.py index_file 0 query.text 029

@@ -64,6 +64,7 @@ class IndexItem:
     def sort(self):
         ''' sort by document ID for more efficient merging. For each document also sort the positions'''
         # ToDo
+        #
 
 
 class InvertedIndex:
