@@ -13,6 +13,8 @@ usage:
 '''
 import random
 from functools import reduce
+import scipy
+
 from query import query
 from cranqry import loadCranQry
 from index import InvertedIndex
@@ -24,6 +26,8 @@ def eval(numberofrandomqueries):
     # ToDo
     actual = []
    #
+    if numberofrandomqueries>152:
+        raise Exception('please enter query cound less than 153')
     qrys = loadCranQry("query.text")
     validqueries = []
     for q in qrys:
@@ -53,6 +57,8 @@ def eval(numberofrandomqueries):
     samplespace = np.intersect1d(relevent, validqueries)
     list_of_random_items = random.sample(list(samplespace), numberofrandomqueries)
     tempcounter2 = 0
+    booleanndcg = []
+    vectorndcg = []
 
     while tempcounter2 < numberofrandomqueries:
 
@@ -77,9 +83,18 @@ def eval(numberofrandomqueries):
             ndcgscore = 0
         else:
             ndcgscore = ndcg_score(idealvectorresult,vectorresult)
-        print(ndcgscore)
+       # print(ndcgscore)
+        vectorndcg.append(ndcgscore)
 
+        booleanqueryresult = query('index_file', '0', 'query.text',  str(list_of_random_items[tempcounter2]), 10)
+      #  print(booleanqueryresult)
+        if sum(booleanqueryresult) > 0:
+            booleanndcg.append(1)
+        else:
+            booleanndcg.append(0)
         tempcounter2 = tempcounter2 + 1
+    print('P value for all the queries processed is:')
+    print(scipy.stats.wilcoxon(vectorndcg, booleanndcg, zero_method='wilcox', correction=False))
     print('Done')
 if __name__ == '__main__':
     eval(152)

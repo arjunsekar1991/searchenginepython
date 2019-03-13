@@ -85,6 +85,7 @@ class QueryProcessor:
                             resultsDocIds.append(list([0]))
                     i = i + 1
                 print(reduce(np.intersect1d, resultsDocIds))
+                return reduce(np.intersect1d, resultsDocIds)
 
 
     def vectorQuery(self, k):
