@@ -69,10 +69,10 @@ def eval(numberofrandomqueries):
                 vectorresult[tempcounter] = 0
 
             tempcounter = tempcounter + 1
-        print(vectorresult)
+#        print(vectorresult)
         idealvectorresult = vectorresult.copy()
         idealvectorresult.sort(reverse=True)
-        print(idealvectorresult)
+ #       print(idealvectorresult)
         if sum(idealvectorresult) == 0:
             ndcgscore = 0
         else:
@@ -82,4 +82,4 @@ def eval(numberofrandomqueries):
         tempcounter2 = tempcounter2 + 1
     print('Done')
 if __name__ == '__main__':
-    eval(100)
+    eval(152)

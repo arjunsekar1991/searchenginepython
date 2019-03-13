@@ -227,7 +227,8 @@ class QueryProcessor:
                 counterObject = Counter(self.intermediateResultVectorQuery[q])
                 high = counterObject.most_common(k)
 #                print('*** query id ***'+q + "***** query text *****" +self.raw_query[q].text)
-                print(high)
+                if k == 3:
+                    print(high)
                 vectorResult = [i[0] for i in counterObject.most_common(k)]
                 #                print(vectorResult)
         return vectorResult
