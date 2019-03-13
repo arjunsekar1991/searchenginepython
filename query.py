@@ -134,7 +134,7 @@ class QueryProcessor:
                         queryVector[query_tokens[temp2]] = (self.index.items[query_tokens[temp2]].get('idf') )* (1 + math.log( wordfreq[0] , 10))
                         temp2 = temp2 + 1
                     else:
-                        documentVector[tokens[temp2]] = 0;
+                        queryVector[query_tokens[temp2]] = 0;
                         temp2 = temp2 + 1
                 #block to calculate query vector end
                 docidScorepair = {}
