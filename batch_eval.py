@@ -54,31 +54,32 @@ def eval(numberofrandomqueries):
     list_of_random_items = random.sample(list(samplespace), numberofrandomqueries)
     tempcounter2 = 0
 
-    while tempcounter2<numberofrandomqueries:
+    while tempcounter2 < numberofrandomqueries:
 
         list_of_random_items[tempcounter2] = '%0*d' % (3, int(list_of_random_items[tempcounter2]))
         print('query for which ndcg is calculated '+ str(list_of_random_items[tempcounter2]))
         y = str(list_of_random_items[tempcounter2])
-        vectorresult = query('index_file', '1', 'query.text', '105', 10)
-        tempcounter =0
+        vectorresult = query('index_file', '1', 'query.text',  str(list_of_random_items[tempcounter2]), 10)
+        tempcounter = 0
         for k in vectorresult:
 
-            if k in queryRelevence[str(list_of_random_items[tempcounter2])]:
-                vectorresult[tempcounter]=1
+            if k in queryRelevence[list_of_random_items[tempcounter2]]:
+                vectorresult[tempcounter] = 1
             else:
-                vectorresult[tempcounter]=0
+                vectorresult[tempcounter] = 0
+
             tempcounter = tempcounter + 1
-        #print(vectorresult)
+        print(vectorresult)
         idealvectorresult = vectorresult.copy()
         idealvectorresult.sort(reverse=True)
-        #print(idealvectorresult)
+        print(idealvectorresult)
         if sum(idealvectorresult) == 0:
             ndcgscore = 0
         else:
             ndcgscore = ndcg_score(idealvectorresult,vectorresult)
         print(ndcgscore)
-        print('Done')
-        tempcounter2 = tempcounter2 - 1
 
+        tempcounter2 = tempcounter2 - 1
+    print('Done')
 if __name__ == '__main__':
     eval(3)
