@@ -18,13 +18,17 @@ from nltk.stem import PorterStemmer
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.stem.snowball import SnowballStemmer
 import json, codecs
+import numpy as np
+import math
 import jsonpickle
 import string
+import sys
 class Posting:
     def __init__(self, docID):
         self.docID = docID
         self.positions = []
         self.termfreq = 0;
+
     def append(self, pos):
         self.positions.append(pos)
          #adding term frequency here
@@ -48,6 +52,7 @@ class IndexItem:
     def __init__(self, term):
         self.term = term
         self.posting = {}  # postings are stored in a python dict for easier index building
+        self.idf = 0;
         #self.sorted_posting s= [] # may sort them by docID for easier query processing
 
     def add(self, docid, pos):
@@ -59,6 +64,7 @@ class IndexItem:
     def sort(self):
         ''' sort by document ID for more efficient merging. For each document also sort the positions'''
         # ToDo
+        #
 
 
 class InvertedIndex:
@@ -110,6 +116,7 @@ class InvertedIndex:
                     self.items[stemmedToken] = tempindexitem
 
                 positionindoc = positionindoc + len(tokens[k]) + 1;
+
                 k = k + 1
 
     def sort(self):
@@ -133,16 +140,18 @@ class InvertedIndex:
         ''' load from disk'''
         # ToDo
 
-        f = open("index_file.json", "r")
+        f = open(filename, "r")
         jsonString = f.read()
 #        print(jsonString)
         self = jsonpickle.decode(jsonString)
-        print(self.items.keys().__len__())
+#        print(self.items.keys().__len__())
         return self
 
     def idf(self, term):
         ''' compute the inverted document frequency for a given term'''
         # ToDo: return the IDF of the term
+        rawvalue = self.nDocs/(len(list(self.items[term].posting.keys())))
+        self.items[term].idf = math.log(rawvalue,10)
 
     # more methods if needed
 
@@ -152,11 +161,11 @@ def test():
     print('Pass')
 
 
-def indexingCranfield():
+def indexingCranfield(collectionname, indexfilename):
     # ToDo: indexing the Cranfield dataset and save the index to a file
     # command line usage: "python index.py cran.all index_file"
     # the index is saved to index_file
-    cf = CranFile('cran.all')
+    cf = CranFile(collectionname)
     iindex = InvertedIndex()
     for doc in cf.docs:
         iindex.indexDoc(doc)
@@ -167,10 +176,16 @@ def indexingCranfield():
                 del iindex.items[line.strip()]
     # Do something with 'line'
 
-    iindex.save("index_file.json")
+    for terms in iindex.items:
+#        print(terms)
+        iindex.idf(terms)
+
+
+    iindex.save(indexfilename)
     print("Index builded successfully")
+
 
 
 if __name__ == '__main__':
     # test()
-    indexingCranfield()
+    indexingCranfield(str(sys.argv[1]), str(sys.argv[2]))
