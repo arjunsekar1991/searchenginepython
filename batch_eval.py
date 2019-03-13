@@ -63,7 +63,7 @@ def eval(numberofrandomqueries):
         tempcounter = 0
         for k in vectorresult:
 
-            if k in queryRelevence[list_of_random_items[tempcounter2]]:
+            if k in queryRelevence[str(list_of_random_items[tempcounter2])]:
                 vectorresult[tempcounter] = 1
             else:
                 vectorresult[tempcounter] = 0
@@ -79,7 +79,7 @@ def eval(numberofrandomqueries):
             ndcgscore = ndcg_score(idealvectorresult,vectorresult)
         print(ndcgscore)
 
-        tempcounter2 = tempcounter2 - 1
+        tempcounter2 = tempcounter2 + 1
     print('Done')
 if __name__ == '__main__':
-    eval(3)
+    eval(100)
