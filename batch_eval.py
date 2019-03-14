@@ -96,8 +96,8 @@ def eval(indexfilename,queryfilename, queryrefilename, numberofrandomqueries):
         tempcounter3 = 0
 
         booleanqueryresult = query(indexfilename, '0', queryfilename,  str(list_of_random_items[tempcounter2]), 10)
-        #booleanqueryresult = [462]
-        booleanquery = (booleanqueryresult + [0] * 10)[:10]
+        #booleanqueryresult = ['462','462','462','462','462','462','462','462','462']
+        booleanquery = booleanqueryresult.copy()
         for g in booleanquery:
 
             if g in queryRelevenceUpdated[str(list_of_random_items[tempcounter2])]:
@@ -107,7 +107,16 @@ def eval(indexfilename,queryfilename, queryrefilename, numberofrandomqueries):
 
             tempcounter3 = tempcounter3 + 1
         #print(booleanquery)
-        idealbooleanresult = booleanquery.copy()
+        tempcounter4 = len(booleanquery)
+        while tempcounter4 < 10:
+            booleanquery.append(0)
+            tempcounter4 = tempcounter4 + 1
+        idealbooleanresult = []
+        for i in range(0,10):
+            if i < len(queryRelevenceUpdated[str(list_of_random_items[tempcounter2])]):
+                idealbooleanresult.append(1)
+            else:
+                idealbooleanresult.append(0)
 
         idealbooleanresult.sort(reverse=True)
         if sum(booleanquery) == 0:
