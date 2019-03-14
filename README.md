@@ -362,3 +362,7 @@ query for which ndcg is calculated 204
 query for which ndcg is calculated 165
 0
 Done
+P value for all the queries processed is:
+WilcoxonResult(statistic=0.0, pvalue=1.0973379779559835e-09)
+Done
+

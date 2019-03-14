@@ -77,7 +77,7 @@ def eval(indexfilename,queryfilename, queryrefilename, numberofrandomqueries):
         tempcounter = 0
         for z in vectorresult:
 
-            if z in queryRelevenceUpdated['001']:
+            if z in queryRelevenceUpdated[str(list_of_random_items[tempcounter2])]:
                 vectorresult[tempcounter] = 1
             else:
                 vectorresult[tempcounter] = 0
@@ -100,7 +100,7 @@ def eval(indexfilename,queryfilename, queryrefilename, numberofrandomqueries):
         booleanquery = (booleanqueryresult + [0] * 10)[:10]
         for g in booleanquery:
 
-            if g in queryRelevenceUpdated['001']:
+            if g in queryRelevenceUpdated[str(list_of_random_items[tempcounter2])]:
                 booleanquery[tempcounter3] = 1
             else:
                 booleanquery[tempcounter3] = 0
@@ -108,6 +108,7 @@ def eval(indexfilename,queryfilename, queryrefilename, numberofrandomqueries):
             tempcounter3 = tempcounter3 + 1
         #print(booleanquery)
         idealbooleanresult = booleanquery.copy()
+
         idealbooleanresult.sort(reverse=True)
         if sum(booleanquery) == 0:
             ndcgscoreboolean = 0
