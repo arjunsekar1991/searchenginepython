@@ -19,7 +19,7 @@ import decimal
 import sys
 class QueryProcessor:
 
-    def __init__(self, query, index, collection):
+    def __init__(self, query, index, collection, numofresults):
         ''' index is the inverted index; collection is the document collection'''
         self.raw_query = query
         self.index = index
@@ -27,6 +27,7 @@ class QueryProcessor:
         self.preprocessed_query_tokens = {}
         self.intermediateResultVectorQuery = {}
         self.queryId = 0
+        self.numofresults = numofresults
 
     def preprocessing(self):
         ''' apply the same preprocessing steps used by indexing,
@@ -84,6 +85,7 @@ class QueryProcessor:
                             resultsDocIds.append(list([0]))
                     i = i + 1
                 print(reduce(np.intersect1d, resultsDocIds))
+                return reduce(np.intersect1d, resultsDocIds)
 
 
     def vectorQuery(self, k):
@@ -91,7 +93,7 @@ class QueryProcessor:
         #ToDo: return top k pairs of (docID, similarity), ranked by their cosine similarity with the query in the descending order
         # You can use term frequency or TFIDF to construct the vectors
         #constructing document vector for document 1
-
+        vectorResult = []
         cf = CranFile('cran.all')
         documentVector = {}
         queryVector = {}
@@ -133,7 +135,7 @@ class QueryProcessor:
                         queryVector[query_tokens[temp2]] = (self.index.items[query_tokens[temp2]].get('idf') )* (1 + math.log( wordfreq[0] , 10))
                         temp2 = temp2 + 1
                     else:
-                        documentVector[tokens[temp2]] = 0;
+                        queryVector[query_tokens[temp2]] = 0;
                         temp2 = temp2 + 1
                 #block to calculate query vector end
                 docidScorepair = {}
@@ -226,16 +228,18 @@ class QueryProcessor:
                 counterObject = Counter(self.intermediateResultVectorQuery[q])
                 high = counterObject.most_common(k)
 #                print('*** query id ***'+q + "***** query text *****" +self.raw_query[q].text)
-                print(high)
-
-
+                if k == 3:
+                    print(high)
+                vectorResult = [i[0] for i in counterObject.most_common(k)]
+                #                print(vectorResult)
+        return vectorResult
 
 
 def test():
     ''' test your code thoroughly. put the testing cases here'''
     print('Pass')
 
-def query( indexfilename,processingalgorithm,queryfilename, queryid):
+def query( indexfilename,processingalgorithm,queryfilename, queryid, numresults=3):
     ''' the main query processing program, using QueryProcessor'''
 
     # ToDo: the commandline usage: "echo query_string | python query.py index_file processing_algorithm"
@@ -253,15 +257,15 @@ def query( indexfilename,processingalgorithm,queryfilename, queryid):
 
     cf = CranFile('cran.all')
 
-    queryProcessor = QueryProcessor(qrys, loadiindex, cf.docs)
+    queryProcessor = QueryProcessor(qrys, loadiindex, cf.docs, numresults)
     if processingalgorithm == '0' :
         queryProcessor.preprocessing()
         queryProcessor.queryId = queryid
         results = queryProcessor.booleanQuery()
     if processingalgorithm == '1':
         queryProcessor.queryId = queryid
-        results = queryProcessor.vectorQuery(3)
-
+        results = queryProcessor.vectorQuery(queryProcessor.numofresults)
+    return results
 if __name__ == '__main__':
     #test()
 
