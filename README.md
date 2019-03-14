@@ -5,6 +5,7 @@ python index.py cran.all index_file
 
 python query.py index_file 0 query.text 029
 python query.py index_file 1 query.text 029
+python batch_eval.py index_file query.text qrels.text 225
 
 029
 ['462'] Vector [('462', 0.9916174256233792), ('1099', 0.4859491001878772), ('1340', 0.3843495920459277)]

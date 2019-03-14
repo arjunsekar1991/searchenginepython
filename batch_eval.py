@@ -14,22 +14,23 @@ usage:
 import random
 from functools import reduce
 import scipy
-
+import sys
 from query import query
 from cranqry import loadCranQry
 from index import InvertedIndex
 from cran import CranFile
 from metrics import ndcg_score
 import numpy as np
-def eval(numberofrandomqueries):
+def eval(indexfilename,queryfilename, queryrefilename, numberofrandomqueries):
 
     # ToDo
     actual = []
    #
-    if numberofrandomqueries>152:
-        raise Exception('please enter query cound less than 153')
+    if numberofrandomqueries>225:
+        raise Exception('please enter query count less than or equal to 225')
     qrys = loadCranQry("query.text")
     validqueries = []
+    querycounter = 0
     for q in qrys:
         validqueries.append(int(q))
 
@@ -40,7 +41,7 @@ def eval(numberofrandomqueries):
     #QueryProcessor.numberofresult =10
     #qp = QueryProcessor(qrys,loadiindex,cf.docs,10)
     queryRelevence = dict()
-    for line in open("qrels.text"):
+    for line in open(queryrefilename):
 
         fields = line.split(" ")
         fields[0] = '%0*d' % (3, int(fields[0]))
@@ -50,12 +51,17 @@ def eval(numberofrandomqueries):
         else:
             # create a new array in this slot
             queryRelevence[fields[0]] = [fields[1]]
+    replacecounter = 0
+    queryRelevenceUpdated = {}
+    for k in queryRelevence:
 
+        queryRelevenceUpdated['%0*d' % (3, int(validqueries[replacecounter]))] = queryRelevence.get(k)
+        replacecounter = replacecounter + 1
 
-    relevent = list(queryRelevence.keys())
-    relevent = list(map(int, relevent))
-    samplespace = np.intersect1d(relevent, validqueries)
-    list_of_random_items = random.sample(list(samplespace), numberofrandomqueries)
+  #  relevent = list(queryRelevence.keys())
+   # relevent = list(map(int, relevent))
+    #samplespace = np.intersect1d(relevent, validqueries)
+    list_of_random_items = random.sample(validqueries, numberofrandomqueries)
     tempcounter2 = 0
     booleanndcg = []
     vectorndcg = []
@@ -65,36 +71,52 @@ def eval(numberofrandomqueries):
         list_of_random_items[tempcounter2] = '%0*d' % (3, int(list_of_random_items[tempcounter2]))
         print('query for which ndcg is calculated '+ str(list_of_random_items[tempcounter2]))
         y = str(list_of_random_items[tempcounter2])
-        vectorresult = query('index_file', '1', 'query.text',  str(list_of_random_items[tempcounter2]), 10)
+        vectorresult = query(indexfilename, '1', queryfilename,  str(list_of_random_items[tempcounter2]), 10)
+ #       vectorresult = ['573', '51', '944', '878', '12', '486', '875', '879', '746', '665']
+ #       print(vectorresult)
         tempcounter = 0
-        for k in vectorresult:
+        for z in vectorresult:
 
-            if k in queryRelevence[str(list_of_random_items[tempcounter2])]:
+            if z in queryRelevenceUpdated['001']:
                 vectorresult[tempcounter] = 1
             else:
                 vectorresult[tempcounter] = 0
 
             tempcounter = tempcounter + 1
-#        print(vectorresult)
+        #print(vectorresult)
         idealvectorresult = vectorresult.copy()
         idealvectorresult.sort(reverse=True)
- #       print(idealvectorresult)
+        #print(idealvectorresult)
         if sum(idealvectorresult) == 0:
             ndcgscore = 0
         else:
             ndcgscore = ndcg_score(idealvectorresult,vectorresult)
        # print(ndcgscore)
         vectorndcg.append(ndcgscore)
+        tempcounter3 = 0
 
-        booleanqueryresult = query('index_file', '0', 'query.text',  str(list_of_random_items[tempcounter2]), 10)
-      #  print(booleanqueryresult)
-        if len(booleanqueryresult) != 0:
-            booleanndcg.append(1)
+        booleanqueryresult = query(indexfilename, '0', queryfilename,  str(list_of_random_items[tempcounter2]), 10)
+        #booleanqueryresult = [462]
+        booleanquery = (booleanqueryresult + [0] * 10)[:10]
+        for g in booleanquery:
+
+            if g in queryRelevenceUpdated['001']:
+                booleanquery[tempcounter3] = 1
+            else:
+                booleanquery[tempcounter3] = 0
+
+            tempcounter3 = tempcounter3 + 1
+        #print(booleanquery)
+        idealbooleanresult = booleanquery.copy()
+        idealbooleanresult.sort(reverse=True)
+        if sum(booleanquery) == 0:
+            ndcgscoreboolean = 0
         else:
-            booleanndcg.append(0)
+            ndcgscoreboolean = ndcg_score(booleanquery,idealbooleanresult)
+        booleanndcg.append(ndcgscoreboolean)
         tempcounter2 = tempcounter2 + 1
     print('P value for all the queries processed is:')
     print(scipy.stats.wilcoxon(vectorndcg, booleanndcg, zero_method='wilcox', correction=False))
     print('Done')
 if __name__ == '__main__':
-    eval(152)
+    eval(str(sys.argv[1]), str(sys.argv[2]),str(sys.argv[3]),int(sys.argv[4]))
