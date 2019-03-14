@@ -88,7 +88,7 @@ def eval(numberofrandomqueries):
 
         booleanqueryresult = query('index_file', '0', 'query.text',  str(list_of_random_items[tempcounter2]), 10)
       #  print(booleanqueryresult)
-        if sum(booleanqueryresult) > 0:
+        if len(booleanqueryresult) != 0:
             booleanndcg.append(1)
         else:
             booleanndcg.append(0)
